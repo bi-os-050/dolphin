@@ -932,7 +932,14 @@ void EmulationKernel::DoState(PointerWrap& p)
 
 IOSC& Kernel::GetIOSC()
 {
-  return m_iosc;
+  if (m_iosc.UserDidImportKey())
+  {
+    return m_iosc;
+  }
+  else
+  {
+    Shutdown(system);
+  }
 }
 
 static void FinishPPCBootstrap(Core::System& system, u64 userdata, s64 cycles_late)

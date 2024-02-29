@@ -13,6 +13,7 @@
 #include "Common/CommonTypes.h"
 #include "Common/Crypto/AES.h"
 #include "Common/Crypto/ec.h"
+#include "Common/MsgHandler.h"
 
 class PointerWrap;
 
@@ -226,6 +227,7 @@ public:
 
   void DoState(PointerWrap& p);
 
+  bool UserDidImportKey();
 private:
   struct KeyEntry
   {
@@ -251,7 +253,10 @@ private:
     ExcludeRootKey,
   };
 
-  void LoadEntries();
+  void ErrorNoKey();
+  bool m_user_did_import_key = false;
+
+  bool LoadEntries();
 
   KeyEntries::iterator FindFreeEntry();
   KeyEntry* FindEntry(Handle handle);

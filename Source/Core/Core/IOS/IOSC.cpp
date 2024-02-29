@@ -456,22 +456,35 @@ void IOSC::Sign(u8* sig_out, u8* ap_cert_out, u64 title_id, const u8* data, u32 
   std::copy(signature.cbegin(), signature.cend(), sig_out);
 }
 
-bool IOSC::LoadEntries()
+bool UserDidImportKey()
+{
+  return m_user_did_import_key
+}
+void IOSC::ErrorNoKey()
+{
+  CriticalAlertFmtT(
+        "You cannot emulate a Wii without using your own device credentials."
+        "\nPlease refer to the NAND usage guide for setup instructions: "
+        "https://dolphin-emu.org/docs/guides/nand-usage-guide/");
+}
+
+void IOSC::LoadEntries()
 {
   File::IOFile file{File::GetUserPath(D_WIIROOT_IDX) + "keys.bin", "rb"};
   if (!file)
   {
     ERROR_LOG_FMT(IOS, "keys.bin could not be found. Cannot proceed!");
-    return false;
+    ErrorNoKey();
+    return;
   }
 
   BootMiiKeyDump dump;
   if (!file.ReadBytes(&dump, sizeof(dump)))
   {
     ERROR_LOG_FMT(IOS, "Failed to read from keys.bin. Cannot proceed!");
-    return false;
+    return;
   }
-
+  m_user_did_import_key = true;
   m_key_entries[HANDLE_CONSOLE_KEY].data = {dump.ng_priv.begin(), dump.ng_priv.end()};
   m_console_signature = dump.ng_sig;
   m_ms_id = Common::swap32(dump.ms_id);
@@ -482,7 +495,6 @@ bool IOSC::LoadEntries()
   m_key_entries[HANDLE_FS_MAC].data = {dump.nand_hmac.begin(), dump.nand_hmac.end()};
   m_key_entries[HANDLE_PRNG_KEY].data = {dump.backup_key.begin(), dump.backup_key.end()};
   m_key_entries[HANDLE_BOOT2_VERSION].misc_data = dump.counters[0].boot2version;
-  return true;
 }
 
 IOSC::KeyEntry::KeyEntry() = default;

@@ -32,7 +32,10 @@
 #include "Core/IOS/VersionInfo.h"
 #include "Core/System.h"
 #include "DiscIO/Enums.h"
-
+CriticalAlertFmtT(
+        "You cannot use the Wii Shop Channel without using your own device credentials."
+        "\nPlease refer to the NAND usage guide for setup instructions: "
+        "https://dolphin-emu.org/docs/guides/nand-usage-guide/");
 namespace IOS::HLE
 {
 namespace
@@ -328,22 +331,6 @@ bool ESDevice::LaunchTitle(u64 title_id, HangPPC hang_ppc)
   INFO_LOG_FMT(IOS_ES, "ES_Launch: Title context changed: (none)");
 
   NOTICE_LOG_FMT(IOS_ES, "Launching title {:016x}...", title_id);
-
-  if ((title_id == Titles::SHOP || title_id == Titles::KOREAN_SHOP) &&
-      GetEmulationKernel().GetIOSC().IsUsingDefaultId())
-  {
-    ERROR_LOG_FMT(IOS_ES, "Refusing to launch the shop channel with default device credentials");
-    CriticalAlertFmtT(
-        "You cannot use the Wii Shop Channel without using your own device credentials."
-        "\nPlease refer to the NAND usage guide for setup instructions: "
-        "https://dolphin-emu.org/docs/guides/nand-usage-guide/");
-
-    // Send the user back to the system menu instead of returning an error, which would
-    // likely make the system menu crash. Doing this is okay as anyone who has the shop
-    // also has the system menu installed, and this behaviour is consistent with what
-    // ES does when its DRM system refuses the use of a particular title.
-    return LaunchTitle(Titles::SYSTEM_MENU, hang_ppc);
-  }
 
   if (IsTitleType(title_id, ES::TitleType::System) && title_id != Titles::SYSTEM_MENU)
     return LaunchIOS(title_id, hang_ppc);

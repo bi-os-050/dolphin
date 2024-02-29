@@ -108,7 +108,7 @@ enum class MemorySetupType
 };
 
 enum class HangPPC : bool
-{
+{ErrorNoKey()
   No = false,
   Yes = true,
 };
